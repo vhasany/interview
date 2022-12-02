@@ -21,7 +21,7 @@ spring:
       hibernate.hbm2ddl.auto: update
       hibernate.generate_statistics: false
   datasource:
-    url: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=3000
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       poolName: Hikari
@@ -31,3 +31,10 @@ spring:
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
+  kafka:
+    consumer:
+      group-id: financial-docs
+      auto-offset-reset: earliest
+    bootstrap-servers: localhost:29092
+financial:
+  topic-name: finanacial-topic

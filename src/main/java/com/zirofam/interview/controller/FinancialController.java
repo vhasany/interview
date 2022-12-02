@@ -8,11 +8,14 @@ import com.zirofam.interview.controller.model.FinancialModel;
 import com.zirofam.interview.domain.FinancialEntity;
 import com.zirofam.interview.service.FinancialService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.LockTimeoutException;
+import javax.persistence.PessimisticLockException;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -55,7 +58,11 @@ public class FinancialController {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found"));
 
     mapper.updateEntity(entity, dto);
-    service.save(entity);
+    try {
+      service.update(entity);
+    } catch (CannotAcquireLockException | LockTimeoutException exception) {
+      return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+    }
     return new ResponseEntity<>(mapper.toModel(entity), HttpStatus.OK);
   }
 
@@ -69,7 +76,11 @@ public class FinancialController {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found"));
 
     mapper.updateEntity(entity, dto);
-    service.save(entity);
+    try {
+      service.update(entity);
+    } catch (CannotAcquireLockException | LockTimeoutException exception) {
+      return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+    }
     return new ResponseEntity<>(mapper.toModel(entity), HttpStatus.OK);
   }
 
@@ -78,8 +89,11 @@ public class FinancialController {
     service
         .findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found"));
-
-    service.deleteById(id);
+    try {
+      service.deleteById(id);
+    } catch (PessimisticLockException exception) {
+      return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+    }
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
